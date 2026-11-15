@@ -1,0 +1,131 @@
+/* =====================================================================
+   SUNLOCK design tokens and base styles.
+   Type follows NASA's Horizon Design System (Inter, Public Sans, DM Mono);
+   surfaces follow NASA Eyes (black space, thin white rules, floating glass).
+   ===================================================================== */
+
+:root {
+  /* Horizon carbon scale (nasa/hds-core tokens.json) */
+  --carbon-90: #17171b;
+  --carbon-80: #2e2e32;
+  --carbon-70: #444447;
+  --carbon-60: #58585b;
+  --carbon-50: #77777a;
+  --carbon-40: #959599;
+  --carbon-30: #b9b9bb;
+  --carbon-20: #d1d1d1;
+  --carbon-10: #e3e3e3;
+
+  /* surfaces */
+  --bg: #000;
+  --panel: rgba(23, 23, 27, 0.92);
+  --panel-solid: var(--carbon-90);
+  --panel-2: rgba(255, 255, 255, 0.04);
+  --well: #000;
+  --hair: var(--carbon-80);
+  --hair-strong: var(--carbon-70);
+  --row: rgba(255, 255, 255, 0.06);
+
+  /* text: every step is at least 7:1 on black */
+  --ink: #fff;
+  --text: var(--carbon-10);
+  --muted: var(--carbon-30);
+  --faint: var(--carbon-40);
+
+  /* interface accents (Horizon brand tokens) */
+  --blue: #288bff;        /* nasa-blue-tint: the interactive colour on dark */
+  --blue-strong: #1c67e3; /* nasa-blue */
+  --blue-soft: #afcdfc;
+  --red: #f64137;         /* nasa-red: primary action only */
+
+  /* data colours (Horizon data-viz scales): these carry meaning, never use them for chrome */
+  --sun: #f5af0c;
+  --sun-soft: #ffcb47;
+  --comm: #42dbc2;
+  --ok: #47da84;
+  --bad: #ff5c52; /* nasa-red-tint */
+  --accent: var(--blue);
+
+  /* type: Inter for headings and UI, Public Sans for reading text, DM Mono for labels and values */
+  --sans: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --body: "Public Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: "DM Mono", Consolas, Courier, monospace;
+  --display: "Bebas Neue", "Inter", sans-serif;
+  --fs-label: 11px;
+  --fs-1: 12px;
+  --fs-2: 14px;
+  --fs-3: 16px;
+  --fs-4: 18px;
+  --fs-5: 22px;
+  --fs-6: 28px;
+
+  /* shape and rhythm: 8px baseline, square panels, 2px controls */
+  --r: 2px;
+  --s-05: 4px;
+  --s-1: 8px;
+  --s-15: 12px;
+  --s-2: 16px;
+  --s-3: 24px;
+  --gap: 8px;
+  --ctl: 32px;
+  --top-h: 56px;
+
+  font-family: var(--sans);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(1100px 720px at 50% 40%, rgba(28, 103, 227, 0.13), transparent 70%),
+    var(--bg);
+  color: var(--text);
+  font-size: var(--fs-1);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* starfield: two tiles of different sizes so the repeat never lines up */
+body::before, body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+body::before {
+  background-image:
+    radial-gradient(1px 1px at 23px 41px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 131px 97px, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(1.4px 1.4px at 211px 29px, rgba(200, 220, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 317px 173px, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 67px 239px, rgba(255, 255, 255, 0.65), transparent),
+    radial-gradient(1.2px 1.2px at 283px 311px, rgba(255, 235, 200, 0.7), transparent),
+    radial-gradient(1px 1px at 173px 347px, rgba(255, 255, 255, 0.45), transparent);
+  background-size: 373px 373px;
+}
+body::after {
+  background-image:
+    radial-gradient(1px 1px at 89px 61px, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(1px 1px at 251px 149px, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1px 1px at 419px 263px, rgba(210, 225, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 37px 389px, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1px 1px at 331px 467px, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(1px 1px at 479px 71px, rgba(255, 255, 255, 0.25), transparent);
+  background-size: 521px 521px;
+}
+
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
