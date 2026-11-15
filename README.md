@@ -188,13 +188,6 @@ node scripts/build-terrain.mjs
 - **IAU WGCCRE 2015** — cartographic and rotational elements.
 - React, TypeScript, Vite.
 
-## Use of AI
-
-AI coding assistants were used to help write the application code, the data-processing and
-validation scripts, and to edit this documentation. The team specified the science, chose the
-NASA data, and checked the computations and validation results against the source data. No
-AI-generated images, audio or video are included.
-
 ## Licence
 
 MIT. NASA data is used under its public-domain terms; please credit LRO LOLA.
