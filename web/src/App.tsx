@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } 
 import MapView, { MapStatusBar, type MapLayers } from "./components/MapView";
 import SkyView from "./components/SkyView";
 import LanderNow from "./components/LanderNow";
-import { getLanderState } from "./lib/lander";
+import { getLanderState, getSkyPath } from "./lib/lander";
 import TimelineStrip from "./components/TimelineStrip";
 import Porkchop from "./components/Porkchop";
 // three.js is only downloaded when someone opens the 3D view
@@ -624,6 +624,14 @@ export default function App() {
     () => (selSeries.length ? simulateMission(selSeries, landIdx, missionSteps, STEP_MIN, arrayMode, lander, req) : null),
     [selSeries, landIdx, missionSteps, arrayMode, lander, req]
   );
+  // Sun and Earth against the skyline over the stay, hourly, from the skies already computed
+  // for the timeline: a function of the clock time (landIdx), like the schematic above it
+  const skyPath = useMemo(() => {
+    if (!selected) return null;
+    const rs = [];
+    for (let i = landIdx; i <= landIdx + missionSteps && i < skies.length; i += 2) rs.push(readSite(selected, skies[i]));
+    return getSkyPath(rs, STEP_MIN * 2);
+  }, [selected, skies, landIdx, missionSteps]);
   const landerBySite = useMemo(
     () =>
       new Map(
@@ -1369,7 +1377,7 @@ export default function App() {
 
           {selected && reading && (
             <section className="pane lander-now" aria-label="The lander at this moment">
-              <LanderNow state={landerNow} tMs={currentMs} siteName={selected.name} />
+              <LanderNow state={landerNow} tMs={currentMs} siteName={selected.name} path={skyPath} stayDays={missionDays} />
             </section>
           )}
 

@@ -1564,3 +1564,23 @@
 .ln-read dd.ln-sub { font-family: var(--body); font-size: var(--fs-label); font-weight: 400; color: var(--muted); white-space: normal; line-height: 1.3; }
 .ln-note, .ln-none { margin: var(--s-1) 0 0; font-family: var(--body); font-size: var(--fs-label); line-height: 1.45; color: var(--faint); }
 @media (max-width: 480px) { .ln-read { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---- Sun and Earth paths against the skyline over the stay (SkyPaths in LanderNow.tsx) */
+.ln-paths { margin-top: var(--s-15); padding-top: var(--s-1); border-top: 1px solid var(--hair-soft); }
+.ln-paths-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px var(--s-1); }
+.ln-k { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.ln-paths-key { display: inline-flex; align-items: center; gap: 5px; font-family: var(--body); font-size: var(--fs-label); color: var(--faint); white-space: nowrap; }
+.ln-paths-key i { display: inline-block; width: 10px; height: 2px; }
+.ln-paths-key .k-sun { background: var(--sun-soft); }
+.ln-paths-key .k-earth { background: var(--comm); margin-left: 4px; }
+.ln-paths-key .k-off { background: var(--carbon-50); margin-left: 4px; }
+.ln-paths-svg { margin-top: 4px; }
+.ln-paths-ground { fill: #14151a; }
+.ln-paths-day { stroke: rgba(255, 255, 255, 0.07); stroke-width: 1; }
+.ln-path { fill: none; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+.ln-path.is-sun { stroke: var(--sun-soft); }
+.ln-path.is-earth { stroke: var(--comm); }
+.ln-path.is-off { stroke: var(--carbon-50); stroke-width: 1.1; stroke-dasharray: 2 2.5; }
+.ln-paths-now { stroke: #000; stroke-width: 1; }
+.ln-paths-now.is-sun { fill: var(--sun-soft); }
+.ln-paths-now.is-earth { fill: var(--comm); }

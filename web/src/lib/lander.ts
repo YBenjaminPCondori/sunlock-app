@@ -93,6 +93,64 @@ export function getLanderState(reading: LanderReading | null | undefined, spec: 
   };
 }
 
+export type SkyPathPoint = {
+  /** hours after the clock time */
+  h: number;
+  /** Sun's centre above (+) or below (-) the skyline in the Sun's direction, degrees */
+  sunClearDeg: number;
+  /** any part of the Sun's disc above the skyline */
+  lit: boolean;
+  /** Earth's centre above (+) or below (-) the skyline in Earth's direction, degrees */
+  earthClearDeg: number;
+  /** any part of Earth's disc above the skyline: a direct radio line */
+  comm: boolean;
+};
+
+export type SkyPath = {
+  points: SkyPathPoint[];
+  /** hours covered, from the clock time to the last point */
+  spanH: number;
+  /** largest distance from the skyline reached by either body, degrees (for the scale) */
+  maxAbsDeg: number;
+  /** readings that were missing or not a number and were left out, never filled in */
+  skipped: number;
+};
+
+/**
+ * The Sun's and Earth's paths against the skyline over the stay: one point per reading, in
+ * time order, starting at the clock time. Each point is the model's value for that time step;
+ * nothing is interpolated or smoothed, and a missing reading is skipped and counted.
+ */
+export function getSkyPath(readings: (LanderReading | null | undefined)[], stepMin: number): SkyPath {
+  const points: SkyPathPoint[] = [];
+  let skipped = 0, maxAbsDeg = 0;
+  for (let i = 0; i < readings.length; i++) {
+    const r = readings[i];
+    if (!r || !finite(r.sunElev, r.sunHorizon, r.earthElev, r.earthHorizon, r.sunFrac)) { skipped++; continue; }
+    const sunClearDeg = r.sunElev - r.sunHorizon, earthClearDeg = r.earthElev - r.earthHorizon;
+    maxAbsDeg = Math.max(maxAbsDeg, Math.abs(sunClearDeg), Math.abs(earthClearDeg));
+    points.push({ h: (i * stepMin) / 60, sunClearDeg, lit: r.sunFrac > 0, earthClearDeg, comm: r.comm });
+  }
+  return { points, spanH: points.length ? points[points.length - 1].h : 0, maxAbsDeg, skipped };
+}
+
+/**
+ * Split a path into runs where a yes/no state holds, so each run can be drawn in its own
+ * colour. Neighbouring runs share their boundary point, so the line has no gaps; a break in
+ * the data (points more than `maxGapH` apart) starts a new run and is not bridged.
+ */
+export function pathRuns<T extends { h: number }>(points: T[], on: (p: T) => boolean, maxGapH: number): { on: boolean; points: T[] }[] {
+  const runs: { on: boolean; points: T[] }[] = [];
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i], state = on(p), last = runs[runs.length - 1];
+    const gap = i > 0 && p.h - points[i - 1].h > maxGapH;
+    if (!last || gap) runs.push({ on: state, points: [p] });
+    else if (last.on === state) last.points.push(p);
+    else { last.points.push(p); runs.push({ on: state, points: [p] }); }
+  }
+  return runs;
+}
+
 /**
  * Where to draw a disc against its skyline, in disc radii above the skyline line. The true
  * offset is used while the disc is near the skyline (where it matters); far above or below

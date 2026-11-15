@@ -121,3 +121,71 @@ test("moving dashes are a function of the clock: they stop when it stops and rev
   assert.ok(flowPhase(-1) >= 0 && flowPhase(-1) < 1);
   assert.equal(flowPhase(NaN), 0);
 });
+
+// ---- the Sun's and Earth's paths against the skyline over the stay
+import { getSkyPath, pathRuns } from "../.build/lander.js";
+
+const stayReadings = (startMs, steps, stride = 1) => {
+  const out = [];
+  for (let i = 0; i < steps; i += stride) out.push(readSite(dgr2, skyAt(new Date(startMs + i * STEP_MS))));
+  return out;
+};
+
+test("sky path: one point per reading, in time order, each equal to the model's own reading", () => {
+  const rs = stayReadings(T0, 14 * 48);
+  const path = getSkyPath(rs, 30);
+  assert.equal(path.points.length, rs.length);
+  assert.equal(path.skipped, 0);
+  assert.equal(path.spanH, (rs.length - 1) * 0.5);
+  for (const i of [0, 1, 100, 671]) {
+    const p = path.points[i], r = rs[i];
+    assert.equal(p.h, i * 0.5);
+    assert.equal(p.sunClearDeg, r.sunElev - r.sunHorizon);
+    assert.equal(p.earthClearDeg, r.earthElev - r.earthHorizon);
+    assert.equal(p.lit, r.sunFrac > 0);
+    assert.equal(p.comm, r.comm);
+  }
+  assert.ok(path.maxAbsDeg > 0 && path.points.every((p) => Math.abs(p.sunClearDeg) <= path.maxAbsDeg + 1e-12));
+});
+
+test("sky path: its first point is the lander state at the clock time", () => {
+  const rs = stayReadings(T0, 48);
+  const first = getSkyPath(rs, 30).points[0], now = getLanderState(rs[0], spec, "tracking");
+  assert.equal(first.sunClearDeg, now.sunClearDeg);
+  assert.equal(first.earthClearDeg, now.earthClearDeg);
+  assert.equal(first.lit, now.sunFrac > 0);
+  assert.equal(first.comm, now.comm);
+});
+
+test("sky path: lit and dark stretches match the stay the verdict is computed on", () => {
+  // the 4 Feb landing at de Gerlache Rim 2 has a long dark stretch (the README's failing case)
+  const path = getSkyPath(stayReadings(T0, 14 * 48), 30);
+  const dark = pathRuns(path.points, (p) => p.lit, 1).filter((r) => !r.on);
+  const longestDarkH = Math.max(...dark.map((r) => r.points[r.points.length - 1].h - r.points[0].h));
+  assert.ok(longestDarkH > 150 && longestDarkH < 260, `longest dark ${longestDarkH} h`);
+});
+
+test("sky path: missing readings are skipped and counted, never filled in", () => {
+  const rs = stayReadings(T0, 10);
+  rs[3] = null; rs[4] = { ...rs[4], sunElev: NaN };
+  const path = getSkyPath(rs, 30);
+  assert.equal(path.points.length, 8);
+  assert.equal(path.skipped, 2);
+  assert.deepEqual(path.points.map((p) => p.h), [0, 0.5, 1, 2.5, 3, 3.5, 4, 4.5]);
+  const runs = pathRuns(path.points, () => true, 0.75);
+  assert.equal(runs.length, 2, "the gap is not bridged by a line");
+  assert.deepEqual(getSkyPath([], 30), { points: [], spanH: 0, maxAbsDeg: 0, skipped: 0 });
+});
+
+test("sky path: deterministic, and the same whether time was played, scrubbed or jumped to", () => {
+  const a = getSkyPath(stayReadings(T0 + 96 * STEP_MS, 96), 30);
+  getSkyPath(stayReadings(T0, 96), 30); getSkyPath(stayReadings(T0 + 500 * STEP_MS, 96), 30);
+  const b = getSkyPath(stayReadings(T0 + 96 * STEP_MS, 96), 30);
+  assert.deepEqual(a, b);
+});
+
+test("path runs: neighbouring runs share their boundary point so the drawn line has no holes", () => {
+  const pts = [0, 1, 2, 3, 4, 5].map((h) => ({ h, v: h >= 2 && h <= 3 }));
+  const runs = pathRuns(pts, (p) => p.v, 1.5);
+  assert.deepEqual(runs.map((r) => [r.on, r.points.map((p) => p.h)]), [[false, [0, 1, 2]], [true, [2, 3, 4]], [false, [4, 5]]]);
+});

@@ -1,4 +1,4 @@
-import { discOffset, flowPhase, type LanderState } from "../lib/lander";
+import { discOffset, flowPhase, pathRuns, type LanderState, type SkyPath, type SkyPathPoint } from "../lib/lander";
 import { fmtPower } from "../lib/power";
 
 type Props = {
@@ -7,6 +7,9 @@ type Props = {
   /** the timeline clock, ms: only used to move the dashes, so they stop when the clock stops */
   tMs: number;
   siteName: string;
+  /** Sun and Earth against the skyline from the clock time to the end of the stay, or null */
+  path: SkyPath | null;
+  stayDays: number;
 };
 
 const W = 360, H = 132;
@@ -27,7 +30,66 @@ const signed = (deg: number) => `${deg >= 0 ? "+" : "−"}${Math.abs(deg).toFixe
  * picture is a function of the props, so it plays, pauses, scrubs and changes speed with the
  * timeline and cannot drift from it.
  */
-export default function LanderNow({ state, tMs, siteName }: Props) {
+const PW = 360, PH = 78, PL = 30, PR = 6, PT = 8, PB = 14;
+
+/**
+ * The Sun's and Earth's paths against the skyline from the clock time to the end of the stay.
+ * Height is degrees above or below the skyline in each body's own direction, so the line
+ * crossing zero is a sunrise, sunset, Earthrise or Earthset. Each vertex is one model time
+ * step; the lines are straight between steps and nothing is smoothed.
+ */
+function SkyPaths({ path, stayDays }: { path: SkyPath; stayDays: number }) {
+  const span = Math.max(1, path.spanH);
+  const top = Math.max(1, Math.ceil(path.maxAbsDeg));
+  const x = (h: number) => PL + (h / span) * (PW - PL - PR);
+  const y = (deg: number) => PT + ((top - Math.max(-top, Math.min(top, deg))) / (2 * top)) * (PH - PT - PB);
+  const stepH = path.points.length > 1 ? path.points[1].h - path.points[0].h : 1;
+  const line = (pts: SkyPathPoint[], key: "sunClearDeg" | "earthClearDeg") =>
+    pts.map((p, i) => `${i ? "L" : "M"}${x(p.h).toFixed(1)},${y(p[key]).toFixed(1)}`).join(" ");
+  const sunRuns = pathRuns(path.points, (p) => p.lit, stepH * 1.5);
+  const earthRuns = pathRuns(path.points, (p) => p.comm, stepH * 1.5);
+  const first = path.points[0];
+  const days = Math.round(span / 24);
+  const litH = sunRuns.filter((r) => r.on).reduce((s, r) => s + (r.points[r.points.length - 1].h - r.points[0].h), 0);
+  const commH = earthRuns.filter((r) => r.on).reduce((s, r) => s + (r.points[r.points.length - 1].h - r.points[0].h), 0);
+  const label =
+    `Sun and Earth against the skyline over the next ${days} days. ` +
+    `Sun up for about ${Math.round((100 * litH) / span)}% of the time, Earth in view for about ${Math.round((100 * commH) / span)}%.`;
+
+  return (
+    <div className="ln-paths">
+      <div className="ln-paths-head">
+        <span className="ln-k">Sun and Earth paths · next {days === stayDays ? `${stayDays} days (your stay)` : `${days} days`}</span>
+        <span className="ln-paths-key"><i className="k-sun" /> Sun <i className="k-earth" /> Earth <i className="k-off" /> hidden</span>
+      </div>
+      <svg viewBox={`0 0 ${PW} ${PH}`} className="ln-svg ln-paths-svg" role="img" aria-label={label}>
+        {/* below the skyline is ground */}
+        <rect className="ln-paths-ground" x={PL} y={y(0)} width={PW - PL - PR} height={PH - PB - y(0)} />
+        <line className="ln-skyline" x1={PL} x2={PW - PR} y1={y(0)} y2={y(0)} />
+        {Array.from({ length: Math.floor(span / 24) }, (_, d) => d + 1).map((d) => (
+          <line key={d} className="ln-paths-day" x1={x(d * 24)} x2={x(d * 24)} y1={PT} y2={PH - PB} />
+        ))}
+        {earthRuns.map((r, i) => <path key={`e${i}`} d={line(r.points, "earthClearDeg")} className={r.on ? "ln-path is-earth" : "ln-path is-off"} />)}
+        {sunRuns.map((r, i) => <path key={`s${i}`} d={line(r.points, "sunClearDeg")} className={r.on ? "ln-path is-sun" : "ln-path is-off"} />)}
+        {/* where each body is at the clock time: the same values as the picture above */}
+        <circle className="ln-paths-now is-earth" cx={x(0)} cy={y(first.earthClearDeg)} r="3" />
+        <circle className="ln-paths-now is-sun" cx={x(0)} cy={y(first.sunClearDeg)} r="3" />
+        <text className="ln-lab ln-lab-dim" x={PL - 3} y={PT + 3} textAnchor="end">+{top}°</text>
+        <text className="ln-lab ln-lab-dim" x={PL - 3} y={y(0) + 3} textAnchor="end">sky</text>
+        <text className="ln-lab ln-lab-dim" x={PL - 3} y={PH - PB} textAnchor="end">−{top}°</text>
+        <text className="ln-lab ln-lab-dim" x={PL} y={PH - 3}>now</text>
+        <text className="ln-lab ln-lab-dim" x={PW - PR} y={PH - 3} textAnchor="end">+{days} d</text>
+      </svg>
+      <p className="ln-note">
+        Height above (+) or below (−) the local skyline in each body's own direction, one point per {Math.round(stepH * 60)} minutes of model time, straight lines between points.
+        {path.skipped > 0 ? ` ${path.skipped} time step${path.skipped > 1 ? "s have" : " has"} no data and ${path.skipped > 1 ? "are" : "is"} left blank.` : ""}
+        {" "}These are paths across the sky, not a flight path.
+      </p>
+    </div>
+  );
+}
+
+export default function LanderNow({ state, tMs, siteName, path, stayDays }: Props) {
   if (!state) {
     return (
       <div className="ln">
@@ -169,6 +231,8 @@ export default function LanderNow({ state, tMs, siteName }: Props) {
           <dd className="ln-sub">Earth: {earthText}</dd>
         </div>
       </dl>
+
+      {path && path.points.length > 1 && <SkyPaths path={path} stayDays={stayDays} />}
 
       <p className="ln-note">
         Computed for the time on the clock from LOLA terrain and the Sun and Earth positions: a model result, not spacecraft telemetry.
