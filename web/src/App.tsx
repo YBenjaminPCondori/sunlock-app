@@ -1,6 +1,8 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import MapView, { MapStatusBar, type MapLayers } from "./components/MapView";
 import SkyView from "./components/SkyView";
+import LanderNow from "./components/LanderNow";
+import { getLanderState } from "./lib/lander";
 import TimelineStrip from "./components/TimelineStrip";
 import Porkchop from "./components/Porkchop";
 // three.js is only downloaded when someone opens the 3D view
@@ -456,6 +458,8 @@ export default function App() {
     () => (selected ? readSite(selected, currentSky) : null),
     [selected, currentSky]
   );
+  // the lander schematic: a pure function of the reading at the clock time, so it has no clock of its own
+  const landerNow = useMemo(() => getLanderState(reading, lander, arrayMode), [reading, lander, arrayMode]);
 
   /**
    * When the current state flips next at the selected site: sunset or sunrise, Earthset or
@@ -1362,6 +1366,12 @@ export default function App() {
               <button className="vh-dl" onClick={() => window.print()}>Print a one-page mission brief (or save as PDF)</button>
             )}
           </section>
+
+          {selected && reading && (
+            <section className="pane lander-now" aria-label="The lander at this moment">
+              <LanderNow state={landerNow} tMs={currentMs} siteName={selected.name} />
+            </section>
+          )}
 
           {reading && (
             <section className="pane now-strip" aria-label="Right now at this site">

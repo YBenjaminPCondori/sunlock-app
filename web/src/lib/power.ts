@@ -104,7 +104,7 @@ export type MissionResult = {
 };
 
 /** Heaters are needed until at least half of the Sun's disc is above the skyline. */
-const HEATER_SUN_FRACTION = 0.5;
+export const HEATER_SUN_FRACTION = 0.5;
 
 /**
  * The single mission evaluator behind every verdict, ranking, date grid, sizing answer and
