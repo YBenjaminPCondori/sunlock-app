@@ -18,7 +18,7 @@ import { skyAt, readSite, siteBasis, lookAngles, type Site } from "./lib/selene"
 import { missionCsv } from "./lib/export";
 import { readLanderParams } from "./lib/inputs";
 import { LANDER_LIMITS } from "./lib/power";
-import { arrayPowerPerM2, batteryWh, energyWh, fmtEnergy, fmtPower, simulateMission, porkchopRow, sizeToSurvive, stressTest, limitingCase, robustOptions, allCasesPass, earliestSurvivable, type ArrayMode, type LanderSpec, type MissionResult, type MissionRequirements, type StressCase, type TerrainCase } from "./lib/power";
+import { arrayPowerPerM2, batteryWh, energyWh, fmtEnergy, fmtPower, simulateMission, porkchopRow, sizeToSurvive, stressTest, limitingCase, planRobustness, earthSharePct, robustOptions, allCasesPass, earliestSurvivable, type ArrayMode, type LanderSpec, type MissionResult, type MissionRequirements, type StressCase, type TerrainCase } from "./lib/power";
 
 const STEP_MIN = 30;
 const STEP_MS = STEP_MIN * 60000;
@@ -707,6 +707,9 @@ export default function App() {
     [selSeries, landIdx, missionSteps, arrayMode, lander, req, terrainCase]
   );
   const limiting = useMemo(() => limitingCase(stress), [stress]);
+  // beside the verdict: how the plan holds up under the stress cases, and how much of the stay Earth is in view
+  const robustness = useMemo(() => planRobustness(stress), [stress]);
+  const earthStayPct = useMemo(() => earthSharePct(selSeries, landIdx, missionSteps), [selSeries, landIdx, missionSteps]);
   /** Changes that make the plan pass every tested case. */
   const robust = useMemo(() => {
     if (!selSeries.length || landIdx + missionSteps > selSeries.length) return null;
@@ -1286,6 +1289,27 @@ export default function App() {
               {selLander && missionFits && selLander.survives && maxOutageH !== null && ` Longest time without Earth: ${selLander.longestEarthOutageH.toFixed(0)} h (limit ${maxOutageH} h).`}
               {selLander && !missionFits && `We model one calendar year at a time, to ${win.endLabel}. Land before ${fmtDay(START_MS + (DAYS - missionDays) * 86400000)}, or pick ${year + 1}.`}
             </div>
+            {selLander && missionFits && (robustness || earthStayPct !== null) && (
+              <div className="vh-facts">
+                {robustness && (
+                  <span className={`vh-chip is-${robustness.level}`}
+                        title="Stress cases are sensitivity checks we chose (late landing, weaker panels, higher load, lower charge, higher hills), not probabilities. Open Stress test below for each one.">
+                    <b>{robustness.level === "robust" ? "Robust" : robustness.level === "marginal" ? "Marginal" : "Partly untested"}</b>
+                    {robustness.level === "robust" ? ` · passes all ${robustness.total} stress cases`
+                      : robustness.level === "marginal" ? ` · fails ${robustness.tested - robustness.passing} of ${robustness.total} stress cases${robustness.firstFailure ? ` (first: ${robustness.firstFailure.toLowerCase()})` : ""}`
+                      : ` · ${robustness.total - robustness.tested} of ${robustness.total} stress cases run past the modelled data`}
+                  </span>
+                )}
+                {earthStayPct !== null && (
+                  <span className={earthStayPct < 50 ? "vh-fact is-low" : "vh-fact"}
+                        title="Share of the stay with any part of Earth above the local skyline, which is when a direct radio link is possible. Set 'Longest time without Earth in view' on the left to make this part of the verdict.">
+                    Earth in view <b>{earthStayPct.toFixed(0)}%</b> of the stay
+                    {selLander.survives && ` · longest gap ${selLander.longestEarthOutageH >= 48 ? `${(selLander.longestEarthOutageH / 24).toFixed(1)} days` : `${selLander.longestEarthOutageH.toFixed(0)} h`}`}
+                    {maxOutageH === null && " · not counted in the verdict"}
+                  </span>
+                )}
+              </div>
+            )}
             {selLander && missionFits && selLander.soc.length > 1 && (
               <SocSpark soc={selLander.soc} lostFrac={selLander.lostAt !== null ? (selLander.lostAt - currentMs) / (missionDays * DAY_MS) : null} startMs={currentMs} days={missionDays} />
             )}

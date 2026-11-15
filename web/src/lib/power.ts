@@ -295,6 +295,54 @@ export function allCasesPass(cases: StressCase[]): boolean {
   return cases.length > 0 && cases.every((c) => c.result !== null && c.result.survives);
 }
 
+export type Robustness = {
+  /** robust: every case was run and passed; marginal: at least one run case fails; untested: none fails but some could not be run */
+  level: "robust" | "marginal" | "untested";
+  passing: number;
+  /** cases that could be evaluated */
+  tested: number;
+  total: number;
+  /** label of the case that fails earliest, or null */
+  firstFailure: string | null;
+};
+
+/**
+ * How a plan that survives as planned holds up under the stress cases, for the label beside
+ * the verdict. null when the plan does not survive as planned (the verdict already says so)
+ * or there are no stress cases to judge by. The cases are sensitivity checks chosen by us,
+ * not probabilities, so "robust" means "passed every case we ran", nothing stronger.
+ */
+export function planRobustness(cases: StressCase[]): Robustness | null {
+  const nominal = cases.find((c) => c.id === "nominal");
+  if (!nominal || !nominal.result || !nominal.result.survives || cases.length < 2) return null;
+  const tested = cases.filter((c) => c.result !== null);
+  const passing = tested.filter((c) => c.result!.survives).length;
+  const first = limitingCase(cases);
+  return {
+    level: passing < tested.length ? "marginal" : tested.length < cases.length ? "untested" : "robust",
+    passing,
+    tested: tested.length,
+    total: cases.length,
+    firstFailure: first ? first.label : null,
+  };
+}
+
+/**
+ * Share of the stay with a direct line to Earth (any part of Earth above the skyline), %, over
+ * the same steps the mission is evaluated on. null when the stay runs past the data or the
+ * samples carry no Earth information.
+ */
+export function earthSharePct(samples: MissionSample[], startIdx: number, steps: number): number | null {
+  if (steps <= 0 || startIdx < 0 || startIdx + steps > samples.length) return null;
+  let up = 0;
+  for (let i = startIdx; i < startIdx + steps; i++) {
+    const c = samples[i].comm;
+    if (c === undefined) return null;
+    if (c) up++;
+  }
+  return (100 * up) / steps;
+}
+
 /**
  * Earliest start index in [from, last] whose mission meets every requirement, checking EVERY
  * step (no coarse scan), so a viable window shorter than any scan stride cannot be missed.

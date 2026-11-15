@@ -189,3 +189,58 @@ test("path runs: neighbouring runs share their boundary point so the drawn line 
   const runs = pathRuns(pts, (p) => p.v, 1.5);
   assert.deepEqual(runs.map((r) => [r.on, r.points.map((p) => p.h)]), [[false, [0, 1, 2]], [true, [2, 3, 4]], [false, [4, 5]]]);
 });
+// ---- the label beside the verdict: how the plan holds up, and how much of the stay Earth is in view
+import { planRobustness, earthSharePct, stressTest } from "../.build/power.js";
+import { buildSkies, siteSeries } from "../.build/analysis.js";
+
+const ok = { survives: true, failure: null, lostAt: null, earthFailAt: null };
+const bad = (lostAt) => ({ survives: false, failure: "battery", lostAt, earthFailAt: null });
+const cases = (...rs) => rs.map((result, i) => ({ id: i === 0 ? "nominal" : `c${i}`, label: i === 0 ? "As planned" : `Case ${i}`, result }));
+
+test("robustness: robust only when every case was run and passed", () => {
+  assert.deepEqual(planRobustness(cases(ok, ok, ok)), { level: "robust", passing: 3, tested: 3, total: 3, firstFailure: null });
+});
+
+test("robustness: one failing case makes the plan marginal and names the earliest failure", () => {
+  const r = planRobustness(cases(ok, bad(500), ok, bad(200)));
+  assert.equal(r.level, "marginal");
+  assert.equal(r.passing, 2);
+  assert.equal(r.firstFailure, "Case 3");
+});
+
+test("robustness: a case that could not be run is never counted as a pass", () => {
+  const r = planRobustness(cases(ok, ok, null));
+  assert.equal(r.level, "untested");
+  assert.equal(r.tested, 2);
+  assert.equal(r.total, 3);
+  assert.equal(planRobustness(cases(ok, bad(1), null)).level, "marginal", "a failure outranks an unknown");
+});
+
+test("robustness: no label when the plan fails as planned or there is nothing to judge by", () => {
+  assert.equal(planRobustness(cases(bad(10), ok, ok)), null);
+  assert.equal(planRobustness(cases(ok)), null);
+  assert.equal(planRobustness([]), null);
+  assert.equal(planRobustness(cases(null, ok)), null);
+});
+
+test("Earth share: counts the steps of the stay with Earth in view, and refuses stays past the data", () => {
+  const s = [true, true, false, false, true, false, true, true].map((comm, i) => ({ t: i, sunElev: 0, lit: true, comm }));
+  assert.equal(earthSharePct(s, 0, 8), 62.5);
+  assert.equal(earthSharePct(s, 2, 4), 25);
+  assert.equal(earthSharePct(s, 4, 8), null);
+  assert.equal(earthSharePct(s, 0, 0), null);
+  assert.equal(earthSharePct([{ t: 0, sunElev: 0, lit: true }], 0, 1), null, "no Earth data is not 0%");
+});
+
+test("README example, 16 Feb 11:30 at de Gerlache Rim 2: survives, but Earth is in view about a third of the stay", () => {
+  const start = Date.UTC(2027, 1, 16, 11, 30), steps = 14 * 48;
+  const ser = siteSeries(dgr2, buildSkies(new Date(start), 18, 30));
+  const plain = { loadW: 100, arrayM2: 4, batteryWh: 10000, dod: 0.8 };
+  const share = earthSharePct(ser, 0, steps);
+  assert.ok(share > 28 && share < 38, `Earth share ${share}`);
+  const st = stressTest(ser, 0, steps, 30, "tracking", plain);
+  const r = planRobustness(st);
+  assert.ok(r, "the plan survives as planned, so it gets a label");
+  assert.equal(r.total, st.length);
+  assert.equal(r.level, st.every((c) => c.result && c.result.survives) ? "robust" : st.some((c) => c.result && !c.result.survives) ? "marginal" : "untested");
+});

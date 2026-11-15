@@ -1584,3 +1584,16 @@
 .ln-paths-now { stroke: #000; stroke-width: 1; }
 .ln-paths-now.is-sun { fill: var(--sun-soft); }
 .ln-paths-now.is-earth { fill: var(--comm); }
+
+/* ---- beside the verdict: how the plan holds up, and how much of the stay Earth is in view */
+.vh-facts { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-top: var(--s-1); }
+.vh-chip { padding: 3px var(--s-1); border: 1px solid var(--hair-strong); border-radius: var(--r); font-family: var(--body); font-size: var(--fs-1); line-height: 1.4; color: var(--text); cursor: help; }
+.vh-chip b { font-family: var(--mono); font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; }
+.vh-chip.is-robust { border-color: rgba(71, 218, 132, 0.55); }
+.vh-chip.is-robust b { color: var(--ok); }
+.vh-chip.is-marginal { border-color: rgba(245, 175, 12, 0.7); background: rgba(245, 175, 12, 0.1); }
+.vh-chip.is-marginal b { color: var(--sun-soft); }
+.vh-chip.is-untested b { color: var(--muted); }
+.vh-fact { font-family: var(--body); font-size: var(--fs-1); line-height: 1.4; color: var(--muted); cursor: help; }
+.vh-fact b { font-family: var(--mono); font-weight: 500; color: var(--comm); }
+.vh-fact.is-low b { color: var(--sun-soft); }
