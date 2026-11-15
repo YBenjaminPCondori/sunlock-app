@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import MapView, { MapStatusBar, type MapLayers } from "./components/MapView";
 import SkyView from "./components/SkyView";
 import TimelineStrip from "./components/TimelineStrip";
@@ -1274,8 +1274,26 @@ export default function App() {
               {selLander && missionFits && selLander.survives && maxOutageH !== null && ` Longest time without Earth: ${selLander.longestEarthOutageH.toFixed(0)} h (limit ${maxOutageH} h).`}
               {selLander && !missionFits && `We model one calendar year at a time, to ${win.endLabel}. Land before ${fmtDay(START_MS + (DAYS - missionDays) * 86400000)}, or pick ${year + 1}.`}
             </div>
+            {selLander && missionFits && selLander.soc.length > 1 && (
+              <SocSpark soc={selLander.soc} lostFrac={selLander.lostAt !== null ? (selLander.lostAt - currentMs) / (missionDays * DAY_MS) : null} startMs={currentMs} days={missionDays} />
+            )}
+            {selLander && !selLander.survives && missionFits && (
+              nextSurvivable !== null ? (
+                <button className="cta" onClick={() => setCurrentMs(nextSurvivable)}>
+                  Earliest landing it survives → {fmtDate(nextSurvivable)}
+                </button>
+              ) : (
+                <p className="fineprint">No landing from {fmtDay(currentMs)} to {fmtDate(lastLandingMs)} (checked every 30 minutes) meets every requirement for {missionDays} days here. Try a bigger battery, more panels, another site or a looser Earth requirement.</p>
+              )
+            )}
             {sizing && selLander && missionFits && (
-              selLander.failure === "earth" ? (
+              <Fold
+                title={selLander.survives ? "Margin" : "What fixes it"}
+                summary={selLander.failure === "earth" ? "not a battery or panel problem"
+                  : `battery ${sizing.batteryWh !== null ? fmtEnergy(sizing.batteryWh) : "over 1,000 kWh"} · panels ${sizing.arrayM2 !== null ? `${sizing.arrayM2.toFixed(1)} m²` : "no size"}`}
+                defaultOpen={!selLander.survives}
+              >
+              {selLander.failure === "earth" ? (
                 <div className="sizing">
                   <span className="sizing-k">What would fix it</span>
                   <span>No battery or panel size fixes this: it is about where Earth is. Land at another time or site, allow a longer gap, or plan for a relay.</span>
@@ -1300,9 +1318,16 @@ export default function App() {
                     onApply={(v) => setLander({ ...lander, arrayM2: v })}
                   />
                 </div>
-              )
+              )}
+              </Fold>
             )}
             {stress.length > 1 && selLander && missionFits && (
+              <Fold
+                title="Stress test"
+                summary={`${stress.filter((c) => c.result?.survives).length} of ${stress.length} cases pass`}
+                tone={stress.every((c) => c.result?.survives) ? "ok" : "bad"}
+                defaultOpen={!stress.every((c) => c.result?.survives)}
+              >
               <StressCard
                 cases={stress}
                 limiting={limiting}
@@ -1314,18 +1339,7 @@ export default function App() {
                 onSite={(id) => setSelectedId(id)}
                 onNear={(site) => { setSameSpotNote(null); setCustomSite(site); setSelectedId("custom"); }}
               />
-            )}
-            {selLander && missionFits && selLander.soc.length > 1 && (
-              <SocSpark soc={selLander.soc} lostFrac={selLander.lostAt !== null ? (selLander.lostAt - currentMs) / (missionDays * DAY_MS) : null} startMs={currentMs} days={missionDays} />
-            )}
-            {selLander && !selLander.survives && missionFits && (
-              nextSurvivable !== null ? (
-                <button className="cta" onClick={() => setCurrentMs(nextSurvivable)}>
-                  Earliest landing it survives → {fmtDate(nextSurvivable)}
-                </button>
-              ) : (
-                <p className="fineprint">No landing from {fmtDay(currentMs)} to {fmtDate(lastLandingMs)} (checked every 30 minutes) meets every requirement for {missionDays} days here. Try a bigger battery, more panels, another site or a looser Earth requirement.</p>
-              )
+              </Fold>
             )}
             {selLander && missionFits && selected && (
               <button
@@ -2205,6 +2219,29 @@ function MoonFacts({ site, series, year }: { site: Site; series: { sunElev: numb
         the Sun and Earth with the bare terrain{site.terrain === false ? " (here, the edge of the lunar sphere)" : ""}.
       </li>
     </ul>
+  );
+}
+
+/**
+ * A section of the verdict card that folds down to one line, so the verdict, the battery curve and
+ * the headline of each check fit on one screen. It opens by itself when the plan starts failing
+ * (defaultOpen flips), and stays however the user last set it otherwise.
+ */
+function Fold({ title, summary, tone, defaultOpen, children }: {
+  title: string; summary: string; tone?: "ok" | "bad"; defaultOpen: boolean; children: ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  const [lastDefault, setLastDefault] = useState(defaultOpen);
+  if (lastDefault !== defaultOpen) { setLastDefault(defaultOpen); setOpen(defaultOpen); }
+  return (
+    <div className={open ? "fold is-open" : "fold"}>
+      <button type="button" className="fold-head" onClick={() => setOpen(!open)} aria-expanded={open}>
+        <span className="fold-title">{title}</span>
+        <span className={tone ? `fold-sum is-${tone}` : "fold-sum"}>{summary}</span>
+        <svg viewBox="0 0 12 12" aria-hidden><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" /></svg>
+      </button>
+      {open && <div className="fold-body">{children}</div>}
+    </div>
   );
 }
 

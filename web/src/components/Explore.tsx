@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { ReactNode } from "react";
 import TimelineStrip from "./TimelineStrip";
 import type { Sample } from "../lib/analysis";
@@ -52,6 +53,7 @@ const H = 3600000;
  * works on, so switching between the two keeps the site, the date and the lander.
  */
 export default function Explore(p: Props) {
+  const [sitesOpen, setSitesOpen] = useState(true);
   return (
     <div className="ex">
       <div className={p.sceneMode === "surface" ? "ex-scene is-surface" : "ex-scene"}>{p.scene}</div>
@@ -77,8 +79,12 @@ export default function Explore(p: Props) {
         </div>
       </header>
 
-      <nav className="ex-sites ex-panel" aria-label="Landing sites">
+      <nav className={sitesOpen ? "ex-sites ex-panel" : "ex-sites ex-panel is-folded"} aria-label="Landing sites">
         <span className="ex-k">NASA's Artemis III sites</span>
+        <button className="ex-fold" onClick={() => setSitesOpen((o) => !o)} aria-expanded={sitesOpen}
+                aria-label={sitesOpen ? "Hide the list of sites" : "Show the list of sites"} title={sitesOpen ? "Hide the list of sites" : "Show the list of sites"}>
+          <svg viewBox="0 0 12 12" aria-hidden><path d="M6 2 2.5 6 6 10M10 2 6.5 6 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" /></svg>
+        </button>
         <span className="ex-sub">sunniest first · if you land {p.landLabel}</span>
         <ul>
           {p.sites.map((s) => (
@@ -87,6 +93,9 @@ export default function Explore(p: Props) {
                       title={`${s.name}: ${s.lit ? "in sunlight" : "in shadow"} now${s.survives === null ? "" : s.survives ? "; your lander survives" : "; your lander does not survive"}`}>
                 <i className={s.lit ? "ex-dot is-lit" : "ex-dot"} aria-hidden />
                 <span className="ex-site-name">{s.name}</span>
+                <span className={s.lit ? "ex-site-sub is-lit" : "ex-site-sub"}>
+                  {s.lit ? "Sunlit now" : "In shadow"}{s.survives === null ? "" : s.survives ? " · survives" : " · fails"}
+                </span>
                 <span className={s.survives === null ? "ex-mark" : s.survives ? "ex-mark ok" : "ex-mark bad"} aria-hidden>{s.survives === null ? "–" : s.survives ? "✓" : "✗"}</span>
               </button>
             </li>

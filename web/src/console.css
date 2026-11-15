@@ -1254,3 +1254,273 @@
 .method-body .pc-frame { font-size: var(--fs-1); color: var(--muted); }
 .pc-sum { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-family: var(--body); font-size: var(--fs-1); line-height: 1.55; color: var(--carbon-20); }
 .method-body .pc .fineprint { margin: 0; font-size: var(--fs-1); line-height: 1.5; color: var(--faint); }
+
+/* =====================================================================
+   NASA Eyes layout pass for the 3D way in (components/Explore.tsx).
+   Reference: eyes.nasa.gov/apps/solar-system, desktop. Overrides only: the rules above stay
+   as they were. The scene is the page; chrome is borderless dark cards, light large titles,
+   letter-spaced amber sub-lines, and a clock that sits on an arc with a round play button.
+   ===================================================================== */
+.ex {
+  --ex-time-h: 164px;
+  --ex-left-w: 272px;
+  --ex-right-w: 320px;
+  --ex-card-bg: rgba(26, 26, 29, 0.86);
+  --ex-card-hi: rgba(52, 52, 57, 0.92);
+  --ex-amber: #e9a23b;
+}
+.ex-scene.is-surface { left: calc(var(--ex-left-w) + var(--s-3)); right: calc(var(--ex-right-w) + var(--s-3)); }
+
+/* ---- top bar: no plate, text-only actions */
+.ex-top { padding: 0 var(--s-3); background: linear-gradient(rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.3) 65%, transparent); }
+.ex-top .cx-brand h1 { font-size: 13px; font-weight: 600; letter-spacing: 0.24em; }
+.ex-top .cx-brand p { font-size: var(--fs-label); color: var(--faint); }
+.ex-actions { gap: 2px; }
+.ex-actions .cx-btn { height: 36px; padding: 0 14px; border-color: transparent; background: transparent; color: var(--ink); font-size: 13px; font-weight: 600; letter-spacing: 0.02em; }
+.ex-actions .cx-btn:hover { background: rgba(255, 255, 255, 0.12); border-color: transparent; }
+.ex-actions .ex-primary { margin-left: var(--s-1); border-color: rgba(255, 255, 255, 0.7); background: transparent; }
+.ex-actions .ex-primary:hover { background: #fff; border-color: #fff; color: #000; }
+
+/* ---- left: a stack of site cards under a plain heading, with a fold button */
+.ex-sites.ex-panel {
+  left: 0; top: calc(var(--top-h) + 4px); width: calc(var(--ex-left-w) + var(--s-2)); padding: 0 0 0 var(--s-2);
+  max-height: calc(100% - var(--top-h) - var(--ex-time-h) - 60px);
+  background: transparent; border: 0; -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.ex-sites > .ex-k { padding: 0 40px 0 var(--s-15); font-family: var(--sans); font-size: 13px; font-weight: 400; line-height: 26px; letter-spacing: 0; text-transform: none; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ex-sub { padding: 0 var(--s-15); margin-bottom: var(--s-1); }
+.ex-fold {
+  position: absolute; top: 0; right: 0; width: 26px; height: 26px; padding: 0; display: grid; place-items: center;
+  border: 0; border-radius: var(--r); background: rgba(70, 70, 75, 0.75); color: var(--ink);
+  transition: background 0.12s ease;
+}
+.ex-fold:hover { background: rgba(110, 110, 116, 0.9); }
+.ex-fold svg { width: 12px; height: 12px; transition: transform 0.3s ease; }
+.ex-sites ul { display: flex; flex-direction: column; gap: 5px; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--carbon-60) transparent; }
+.ex-sites ul, .ex-sub, .ex-legend { transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0s; }
+.ex-sites.is-folded ul, .ex-sites.is-folded .ex-sub, .ex-sites.is-folded .ex-legend {
+  opacity: 0; transform: translateX(-28px); visibility: hidden; pointer-events: none; transition-delay: 0s, 0s, 0.3s;
+}
+.ex-sites.is-folded .ex-fold svg { transform: rotate(180deg); }
+.ex-site {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "name name mark" "dot sub mark";
+  align-items: center; column-gap: var(--s-1); row-gap: 3px; height: auto; min-height: 50px; padding: 7px 14px 7px 12px;
+  border-left: 2px solid transparent; background: var(--ex-card-bg);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.ex-site:hover { background: var(--ex-card-hi); }
+.ex-site.is-on { background: rgba(255, 255, 255, 0.16); border-left-color: #fff; }
+.ex-site-name { grid-area: name; font-size: 19px; font-weight: 300; line-height: 1.15; letter-spacing: -0.01em; color: var(--ink); }
+.ex-site .ex-dot { grid-area: dot; width: 6px; height: 6px; }
+.ex-site-sub { grid-area: sub; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--mono); font-size: 10px; line-height: 1.2; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blue-soft); }
+.ex-site-sub.is-lit { color: var(--ex-amber); }
+.ex-site .ex-mark { grid-area: mark; width: 20px; font-size: 17px; }
+.ex-legend { margin-top: var(--s-1); padding: 0 var(--s-15); border-top: 0; text-shadow: 0 0 6px #000; }
+.ex-sites li { animation: ex-in-left 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.ex-sites li:nth-child(1) { animation-delay: 3.3s; }
+.ex-sites li:nth-child(2) { animation-delay: 3.37s; }
+.ex-sites li:nth-child(3) { animation-delay: 3.44s; }
+.ex-sites li:nth-child(4) { animation-delay: 3.51s; }
+.ex-sites li:nth-child(5) { animation-delay: 3.58s; }
+.ex-sites li:nth-child(6) { animation-delay: 3.65s; }
+.ex-sites li:nth-child(7) { animation-delay: 3.72s; }
+.ex-sites li:nth-child(8) { animation-delay: 3.79s; }
+.ex-sites li:nth-child(n + 9) { animation-delay: 3.86s; }
+
+/* ---- right: the chosen site, as one borderless card */
+.ex-card.ex-panel { width: var(--ex-right-w); padding: var(--s-2) 20px 20px; border: 0; background: var(--ex-card-bg); scrollbar-width: thin; scrollbar-color: var(--carbon-60) transparent; }
+.ex-card h2 { font-size: 30px; font-weight: 300; line-height: 1.1; letter-spacing: -0.01em; }
+.ex-chip { padding: 0; border: 0; font-size: 10px; letter-spacing: 0.22em; color: var(--ex-amber); }
+.ex-now > div { border: 0; background: rgba(255, 255, 255, 0.06); }
+.ex-card .ex-wide { height: 36px; border-color: rgba(255, 255, 255, 0.7); color: var(--ink); font-weight: 600; }
+.ex-card .ex-wide:hover { background: #fff; border-color: #fff; color: #000; }
+
+/* ---- camera and scene switches */
+.ex-cam { max-width: calc(100% - var(--ex-right-w) - 3 * var(--s-2)); }
+.ex-cam .segmented { border-color: transparent; background: var(--ex-card-bg); }
+
+/* ---- the clock: date, rate and time along an arc, play button on the arc */
+.ex-time { gap: 6px; background: linear-gradient(transparent, rgba(0, 0, 0, 0.7) 34%, rgba(0, 0, 0, 0.94) 78%); }
+.ex-clock {
+  position: relative; display: grid; justify-content: center; align-items: center; column-gap: var(--s-2); row-gap: 2px;
+  grid-template-columns: minmax(0, 1fr) auto 150px 190px 150px auto minmax(0, 1fr);
+  grid-template-areas: ". back date rate time fwd speed" ". . . play . . .";
+}
+.ex-clock::before {
+  content: ""; position: absolute; left: 50%; top: calc(100% - 21px); width: 680px; height: 170px; margin-left: -340px;
+  border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 50%;
+  clip-path: inset(-1px 0 calc(100% - 20px) 0); pointer-events: none;
+}
+.ex-date { display: contents; }
+.ex-date b, .ex-date span, .ex-date em { margin: 0; font-family: var(--sans); font-size: 14px; line-height: 32px; white-space: nowrap; text-transform: uppercase; }
+.ex-date b { grid-area: date; text-align: right; font-weight: 500; letter-spacing: 0.1em; }
+.ex-date span { grid-area: time; text-align: left; font-weight: 500; letter-spacing: 0.1em; color: var(--ink); }
+.ex-date em { grid-area: rate; text-align: center; font-weight: 700; letter-spacing: 0.06em; color: var(--muted); }
+.ex-date em.is-on { color: var(--ok); }
+.ex-clock > .ex-transport:first-child { grid-area: back; }
+.ex-clock > .ex-transport:nth-child(3) { grid-area: fwd; }
+.ex-clock .ex-transport .tp-btn { border-color: transparent; color: var(--muted); }
+.ex-clock .ex-transport .tp-btn:hover { border-color: transparent; color: var(--ink); }
+.ex-clock > .segmented { grid-area: speed; justify-self: start; border-color: transparent; background: var(--ex-card-bg); }
+.ex-clock > .tp-play {
+  grid-area: play; justify-self: center; position: relative; z-index: 1;
+  width: 42px; min-width: 0; height: 42px; padding: 0; gap: 0; border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.75); background: #0b0b0d; color: var(--ink); font-size: 0;
+  box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.85);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+.ex-clock > .tp-play svg { width: 12px; height: 12px; }
+.ex-clock > .tp-play:hover { background: #1c1c20; border-color: #fff; color: #fff; }
+.ex-clock > .tp-play.tp-on { border-color: var(--ok); background: #06140c; color: var(--ok); animation: ex-live 2s ease-in-out infinite; }
+@keyframes ex-live {
+  0%, 100% { box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.85), 0 0 10px 2px rgba(71, 218, 132, 0.45); }
+  50% { box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.85), 0 0 22px 6px rgba(71, 218, 132, 0.75); }
+}
+
+@media (max-height: 820px) {
+  .ex-site { min-height: 40px; padding-top: 4px; padding-bottom: 4px; row-gap: 1px; }
+  .ex-site-name { font-size: 15px; }
+  .ex-sites ul { gap: 4px; }
+  .ex-sites.ex-panel { max-height: calc(100% - var(--top-h) - var(--ex-time-h) - 52px); }
+}
+@media (max-height: 760px) {
+  /* the sub-line on each card already says sunlit or shadow, survives or fails */
+  .ex-legend { display: none; }
+}
+@media (max-width: 1180px) {
+  .ex { --ex-left-w: 224px; --ex-right-w: 296px; }
+  .ex-clock { grid-template-columns: minmax(0, 1fr) auto 124px 150px 124px auto minmax(0, 1fr); column-gap: var(--s-1); }
+  .ex-date b, .ex-date span, .ex-date em { font-size: 12px; }
+  .ex-clock::before { width: 520px; margin-left: -260px; }
+}
+@media (max-width: 899px) {
+  .ex { --ex-time-h: 176px; }
+  .ex-card.ex-panel { width: auto; }
+  .ex-clock { grid-template-columns: auto auto auto; grid-template-areas: "date rate time" "back play fwd" "speed speed speed"; row-gap: 4px; }
+  .ex-clock > .ex-transport:first-child { justify-self: end; }
+  .ex-clock > .segmented { justify-self: center; }
+  .ex-clock::before { display: none; }
+  .ex-date b, .ex-date span, .ex-date em { line-height: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ex-sites li, .ex-clock > .tp-play.tp-on { animation: none; }
+}
+
+/* =====================================================================
+   NASA Eyes layout pass for the mission console (App.tsx, everything outside .is-explore).
+   Same language as the 3D way in: no hairline boxes, dark cards floating on the starfield,
+   light large titles, letter-spaced amber labels, text-only top-bar actions, round play button.
+   Overrides only: the grid, the breakpoints and every rule above stay as they were.
+   ===================================================================== */
+.console {
+  --ex-card-bg: rgba(26, 26, 29, 0.86);
+  --ex-card-hi: rgba(52, 52, 57, 0.92);
+  --ex-amber: #e9a23b;
+  --hair-soft: rgba(255, 255, 255, 0.09);
+}
+
+/* ---- top bar: no plate, text-only actions, as on the 3D way in */
+.cx-top { padding: 0 var(--s-3); border-bottom-color: transparent; background: linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6)); }
+.cx-top .cx-brand h1 { font-size: 13px; font-weight: 600; letter-spacing: 0.24em; }
+.cx-top .cx-brand p { font-size: var(--fs-label); color: var(--faint); }
+.cx-actions { gap: 2px; }
+.cx-actions .cx-btn { height: 36px; padding: 0 14px; border-color: transparent; background: transparent; color: var(--ink); font-size: 13px; font-weight: 600; letter-spacing: 0.02em; }
+.cx-actions .cx-btn:hover { background: rgba(255, 255, 255, 0.12); border-color: transparent; }
+.cx-actions .ex-primary { margin-left: var(--s-1); border-color: rgba(255, 255, 255, 0.7); background: transparent; }
+.cx-actions .ex-primary:hover { background: #fff; border-color: #fff; color: #000; }
+.cx-telemetry { border-color: transparent; background: var(--ex-card-bg); }
+.tm-cell { border-right-color: var(--hair-soft); }
+.tm-k { letter-spacing: 0.16em; }
+
+/* ---- cards: one dark surface, no outline */
+.pane, .verdict-hero, .cx-dock, .map-status {
+  border-color: transparent; background: var(--ex-card-bg);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.pane { padding: var(--s-2); }
+.pane-title {
+  margin: calc(-1 * var(--s-2)) calc(-1 * var(--s-2)) var(--s-2); padding: 12px var(--s-2) 11px;
+  border-bottom-color: var(--hair-soft); letter-spacing: 0.2em; color: var(--ex-amber);
+}
+.pane-title .pane-sub { letter-spacing: 0.02em; }
+.now-strip { padding: 0; background: transparent; gap: 4px; border: 0; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.now-cell { background: var(--ex-card-bg); }
+.rank-head { border-top-color: var(--hair-soft); border-bottom-color: var(--hair-soft); }
+.rank-active, .rank-active:hover { background: rgba(255, 255, 255, 0.14); }
+.rank-active::before { background: #fff; }
+
+/* ---- lander form: labels wrap instead of cutting off, controls stay on one line */
+.lander-form .field-row, .lander-inputs { align-items: end; }
+.lander-form .field-k { white-space: normal; overflow: visible; letter-spacing: 0.08em; }
+
+/* ---- right rail: the chosen site reads like an Eyes detail card */
+.site-head .tag { padding: 0; border: 0; font-size: 10px; letter-spacing: 0.22em; color: var(--ex-amber); }
+.site-name { font-size: 30px; font-weight: 300; letter-spacing: -0.01em; line-height: 1.1; }
+.verdict-hero { padding-top: var(--s-2); }
+
+/* ---- stage: the map sits on open space, its switch and status bar are plain cards */
+.stage-switch, .map-status .layers-toggle { border-color: transparent; }
+.cx-stage .segmented { border-color: transparent; background: var(--ex-card-bg); }
+
+/* ---- dock: round play button that glows while time runs, borderless date cells */
+.cx-dock { padding: var(--s-15) var(--s-2) var(--s-2); }
+.dock-bar .tp-play {
+  width: 40px; min-width: 0; height: 40px; padding: 0; gap: 0; border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.75); background: #0b0b0d; color: var(--ink); font-size: 0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+.dock-bar .tp-play svg { width: 12px; height: 12px; }
+.dock-bar .tp-play:hover { background: #1c1c20; border-color: #fff; color: #fff; }
+.dock-bar .tp-play.tp-on { border-color: var(--ok); background: #06140c; color: var(--ok); animation: cx-live 2s ease-in-out infinite; }
+@keyframes cx-live {
+  0%, 100% { box-shadow: 0 0 10px 2px rgba(71, 218, 132, 0.45); }
+  50% { box-shadow: 0 0 22px 6px rgba(71, 218, 132, 0.75); }
+}
+.dock-bar .transport .tp-btn:not(.tp-play) { border-color: transparent; color: var(--muted); }
+.dock-bar .transport .tp-btn:not(.tp-play):hover { color: var(--ink); }
+.dock-bar .segmented, .tabs-dock { border-color: transparent; background: rgba(255, 255, 255, 0.05); }
+.db-val { border-color: transparent; background: rgba(255, 255, 255, 0.06); }
+.dock-stat { font-weight: 300; font-size: var(--fs-3); }
+.window { border-color: var(--hair-soft); background: rgba(255, 255, 255, 0.04); }
+
+/* ---- arriving: cards settle in around the map, like the 3D way in */
+.console:not(.is-explore) .cx-left { animation: ex-in-left 0.6s 0.05s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.console:not(.is-explore) .cx-right { animation: ex-in-right 0.6s 0.1s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.console:not(.is-explore) .cx-dock { animation: ex-in-up 0.6s 0.15s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.console:not(.is-explore) .cx-stage { animation: ex-fade 0.8s ease both; }
+@media (max-width: 1180px) {
+  .cx-telemetry { background: transparent; border-top-color: var(--hair-soft); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .console:not(.is-explore) .cx-left, .console:not(.is-explore) .cx-right, .console:not(.is-explore) .cx-dock, .console:not(.is-explore) .cx-stage,
+  .dock-bar .tp-play.tp-on { animation: none; }
+}
+
+/* ---- console fixes found while checking the pass above */
+.lander-form .stat-label { white-space: normal; overflow: visible; letter-spacing: 0.08em; }
+/* small map: the view switch used to sit on top of the "Lunar south pole" read-out.
+   Give the switch its own strip and let the disc take the rest. */
+@container (max-height: 520px) and (min-width: 560px) {
+  .stage-switch { top: 0; }
+  .map-wrap { align-self: end; width: min(100cqw, calc(100cqh - 40px)); height: min(100cqw, calc(100cqh - 40px)); }
+}
+
+/* ---- verdict card: verdict, battery curve, then each check folded to its headline
+   (Fold in App.tsx), so the answer and its evidence fit one screen on a laptop */
+.fold { margin-top: var(--s-1); }
+.fold-head {
+  display: flex; align-items: center; gap: var(--s-1); width: 100%; min-height: 34px; padding: 4px var(--s-15);
+  border: 0; border-radius: var(--r); background: rgba(255, 255, 255, 0.06); color: var(--text); text-align: left;
+  transition: background 0.12s ease;
+}
+.fold-head:hover { background: rgba(255, 255, 255, 0.12); }
+.fold-title { flex: none; font-family: var(--mono); font-size: var(--fs-label); font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink); }
+.fold-sum { flex: 1; min-width: 0; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--mono); font-size: var(--fs-1); color: var(--muted); }
+.fold-sum.is-ok { color: var(--ok); }
+.fold-sum.is-bad { color: var(--bad); }
+.fold-head svg { flex: none; width: 12px; height: 12px; color: var(--muted); transition: transform 0.2s ease; }
+.fold.is-open .fold-head svg { transform: rotate(180deg); }
+.fold-body { animation: ex-fade 0.25s ease both; }
+.fold-body > .sizing, .fold-body > .stress { margin-top: 4px; border-color: var(--hair-soft); }
+@media (prefers-reduced-motion: reduce) { .fold-body { animation: none; } }
