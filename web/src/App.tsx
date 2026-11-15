@@ -520,7 +520,9 @@ export default function App() {
   const comms = useMemo(() => (selSeries.length ? commWindows(selSeries.slice(0, YEAR_N), STEP_MIN) : []), [selSeries, YEAR_N]);
   const nextComms = useMemo(() => (comms.length ? upcomingWindows(comms, currentMs, 4) : []), [comms, currentMs]);
 
-  const powerNow = reading ? arrayPowerPerM2(reading.sunElev, reading.lit, arrayMode, reading.sunAz) : 0;
+  // Use the same fractional solar-disc share the mission evaluator uses, so the
+  // instantaneous figure and the battery simulation can never disagree.
+  const powerNow = reading ? arrayPowerPerM2(reading.sunElev, reading.sunFrac, arrayMode, reading.sunAz) : 0;
   /** average kWh per m^2 per day for each way of mounting the panels, at this site this year */
   const perDayByMode = useMemo(
     () => Object.fromEntries(PANEL_MODES.map((m) => [m, selSeries.length ? energyWh(selSeries.slice(0, YEAR_N), STEP_MIN, m, 1) / DAYS / 1000 : 0])) as Record<ArrayMode, number>,
@@ -1783,7 +1785,7 @@ export default function App() {
               <h3>In short</h3>
               <ul>
                 <li><b>The ground is real.</b> Heights come from the laser altimeter on NASA's Lunar Reconnaissance Orbiter, every 80 m across the pole.</li>
-                <li><b>The sky is exact.</b> We compute where the Sun and Earth are for every half hour, and check those positions against NASA JPL's own ephemeris.</li>
+                <li><b>The sky is checked against JPL.</b> We compute where the Sun and Earth are for every half hour, and compare those positions with NASA JPL's own ephemeris (agreement within 30″, not exact).</li>
                 <li><b>We test ourselves against NASA.</b> Our sunlight, permanent-shadow and Earth-visibility results match the LOLA team's published maps, using pass/fail thresholds we wrote down before comparing.</li>
                 <li><b>The lander check is simple on purpose.</b> A battery charges in sunlight and drains in the dark; if it empties, the lander is lost. Change the numbers to match your design.</li>
               </ul>

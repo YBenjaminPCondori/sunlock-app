@@ -51,7 +51,7 @@ def convert(md):
         out.append('<p>' + inline(' '.join(para)) + '</p>')
     return '\n'.join(out)
 
-src = open(sys.argv[1]).read()
+src = open(sys.argv[1], encoding="utf-8").read()
 body = convert(src)
 html_doc = f"""<!doctype html><html><head><meta charset="utf-8"><style>
 @page {{ size: A4; margin: 18mm 16mm; }}
@@ -68,5 +68,5 @@ pre {{ padding: 6pt; white-space: pre-wrap; }}
 hr {{ border: none; border-top: 0.5pt solid #ccc; margin: 12pt 0; }}
 ul {{ margin: 0 0 6pt 16pt; }}
 </style></head><body>{body}</body></html>"""
-open(sys.argv[2], 'w').write(html_doc)
+open(sys.argv[2], 'w', encoding="utf-8").write(html_doc)
 print("html written", len(html_doc))

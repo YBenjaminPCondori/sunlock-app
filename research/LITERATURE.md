@@ -104,7 +104,7 @@ That is an independent statement of the effect we quantify in our report.
 
 **Updated 15 Nov 2026.** The table above was computed before a 180° azimuth defect was found by
 validating against the LOLA visibility map; those values are superseded. After the fix, the
-model reproduces NASA's 18.6-year map at r = 0.995 (see `BENCHMARKS.md` §1), and the peak near
+model reproduces NASA's 18.6-year map at r = 0.990 (see `BENCHMARKS.md` §1), and the peak near
 Shackleton yields 73% over a 180-day window, with 11.5 days of continuous darkness. The 73% is a
 region centre, not a searched optimum — which is why it sits below the 85–88% reported for
 clusters 20–40 m wide.

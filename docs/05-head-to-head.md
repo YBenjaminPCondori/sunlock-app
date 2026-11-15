@@ -64,5 +64,5 @@ Date: 2026-11-15 · Method: opened each public live app in a browser and read it
 1. **Use NASA's current nine Artemis III regions** (Relevance +1–2, Validity +1)
 2. **Pick each site by searching for the best-lit ground inside the region**, using SUNLOCK's own model and cross-checking against `AVGVISIB`, instead of snapping to high ground (Validity +1, Impact +1). This is the "searched cluster" method of Gläser et al.
 3. **Add a slope check** from the DEM, since NASA's landing criteria include it (Validity, Relevance)
-4. **Show trust:** sampling-uncertainty ranges and the r = 0.995 validation in the app (Creativity, Validity; nobody else shows ranges)
+4. **Show trust:** sampling-uncertainty ranges and the r = 0.990 validation in the app (Creativity, Validity; nobody else shows ranges)
 5. Lander Check verdict + live re-ranking (parity)

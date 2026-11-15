@@ -13,10 +13,10 @@ pre { padding: 6pt; white-space: pre-wrap; }
 hr { border: none; border-top: 0.5pt solid #ccc; margin: 12pt 0; }
 ul { margin: 0 0 6pt 16pt; }
 </style></head><body><h1>Validating a browser-based lunar polar illumination model against NASA&#x27;s LOLA visibility map</h1>
-<p><strong>SUNLOCK technical note</strong> · 15 November 2026 · code: <code>github.com/shahaman098/sunlock</code></p>
+<p><strong>SUNLOCK technical note</strong> · 15 November 2026 · code: <code>github.com/shahaman098/sunlock-app</code> (earlier history, including the pre-registration commit <code>83b4287</code>: <code>github.com/shahaman098/sunlock</code>)</p>
 <hr/>
 <h2>Abstract</h2>
-<p>We test a browser-based lunar south-pole illumination model against NASA&#x27;s published average-visibility product (<code>AVGVISIB_85S_060M_201608</code>, PGDA product 69) — 18.6 years of hourly illumination computed by the LOLA team from their own terrain, with an independent pipeline. At 451 sample points between 85°S and 90°S the model reproduces the reference with Pearson <strong>r = 0.995</strong>, RMSE <strong>1.36 percentage points</strong> and mean bias <strong>−0.15 pp</strong>.</p>
+<p>We test a browser-based lunar south-pole illumination model against NASA&#x27;s published average-visibility product (<code>AVGVISIB_85S_060M_201608</code>, PGDA product 69) — 18.6 years of hourly illumination computed by the LOLA team from their own terrain, with an independent pipeline. At 1,782 random sample points between 85°S and 90°S the model reproduces the reference with Pearson <strong>r = 0.990</strong>, RMSE <strong>1.88 percentage points</strong> and mean bias <strong>+0.01 pp</strong>. At 105 published landing locations, which sit on crests and rims, the error is larger: RMSE <strong>6.8 pp</strong>.</p>
 <p>The comparison found a defect that no internal check had caught: the local horizon was being looked up <strong>180° away</strong> from the Sun&#x27;s azimuth, so every site was tested against terrain on the opposite side. Correcting it moved a permanently shadowed crater floor from 30.5% to 0.0% (reference: 0.0%) and raised the correlation across 60 diagnostics points from −0.18 to +0.98. Every illumination number produced by the model before this fix was wrong in a site-dependent way; the corrected values are reported here.</p>
 <p>The astronomy is verified separately against JPL Horizons: sub-solar longitude agrees to <strong>0.0032°</strong>, sun direction to 21″.</p>
 <hr/>
@@ -26,7 +26,9 @@ ul { margin: 0 0 6pt 16pt; }
 <h2>2. Data</h2>
 <table><thead><tr><th>Product</th><th>Source</th><th>Resolution</th><th>Use</th></tr></thead><tbody>
 <tr><td><code>AVGVISIB_85S_060M_201608</code></td><td>PGDA product 69 (LOLA team)</td><td>60 m/px, 85–90°S</td><td>reference, 18.6 yr hourly</td></tr>
-<tr><td><code>LPSR_85S_060M_201608</code></td><td>PGDA product 69</td><td>60 m/px</td><td>permanent shadow (not yet used)</td></tr>
+<tr><td><code>LPSR_85S_060M_201608</code></td><td>PGDA product 69</td><td>60 m/px</td><td>permanent shadow (H2)</td></tr>
+<tr><td><code>AVGVISIB_85S_060M_201608_EARTH</code></td><td>PGDA product 69</td><td>60 m/px</td><td>Earth visibility (H4)</td></tr>
+<tr><td><code>WAC_POLE_ILL_TWI_SOUTH</code></td><td>LROC</td><td>100 m/px, 88–90°S</td><td>photograph-based illumination (H3)</td></tr>
 <tr><td><code>LDEM_80S_80M</code></td><td>PDS Geosciences</td><td>80 m/px, 80–90°S</td><td>our terrain</td></tr>
 <tr><td><code>LDEM_80S_40M</code></td><td>PDS Geosciences</td><td>40 m/px</td><td>sampling study</td></tr>
 <tr><td><code>LDEM_875S_20M</code></td><td>PDS Geosciences</td><td>20 m/px, 87.5–90°S</td><td>sampling study</td></tr>
@@ -38,15 +40,31 @@ ul { margin: 0 0 6pt 16pt; }
 <h2>4. Results</h2>
 <h3>4.1 Pre-registered hypotheses — all four pass</h3>
 <table><thead><tr><th>#</th><th>Reference product</th><th>Metric</th><th>Result</th><th>Threshold</th></tr></thead><tbody>
-<tr><td>H1</td><td>LOLA average solar visibility (18.6 yr)</td><td>Pearson r</td><td><strong>0.995</strong></td><td>≥ 0.90</td></tr>
-<tr><td></td><td></td><td>RMSE / bias</td><td>1.35 pp / −0.16 pp</td><td>bias ≤ 5 pp</td></tr>
-<tr><td>H2</td><td>LOLA permanent shadow</td><td>IoU</td><td><strong>0.907</strong></td><td>≥ 0.80</td></tr>
+<tr><td>H1</td><td>LOLA average solar visibility (18.6 yr)</td><td>Pearson r</td><td><strong>0.990</strong></td><td>≥ 0.90</td></tr>
+<tr><td></td><td></td><td>RMSE / bias</td><td>1.88 pp / +0.01 pp</td><td>bias ≤ 5 pp</td></tr>
+<tr><td>H2</td><td>LOLA permanent shadow</td><td>IoU</td><td><strong>0.926</strong></td><td>≥ 0.80</td></tr>
 <tr><td>H3</td><td><strong>LROC WAC image-based</strong> illumination</td><td>Pearson r</td><td><strong>0.980</strong></td><td>≥ 0.85</td></tr>
 <tr><td>H4</td><td>LOLA Earth visibility</td><td>Pearson r</td><td><strong>0.989</strong></td><td>≥ 0.90</td></tr>
 </tbody></table>
+<p>These are the pre-registered primary run: 2,000 points drawn, hourly over 18.6 years, of which 1,782 have valid reference data for H1 and 1,471 for H4 (<code>validation/result-converged.json</code>). H2 confusion matrix over all 2,000: TP 212, FP 6, FN 11, TN 1,771. H3 uses the 296 points inside the LROC map (<code>validation/result-wac.json</code>). An earlier 500-point, 3-hourly rerun gave r = 0.995 for H1; it is superseded by the run reported here.</p>
 <p>H3 is the independent-modality test: the LROC map comes from 3,807 photographs, not altimetry.</p>
-<p>Bias by band: −0.10 pp (0–20% illumination), −0.19 pp (20–50%). Agreement is not carried by one end of the range.</p>
-<p>The shipped convention — nearest-neighbour sampling at a 160 m interval — scores r = 0.991, RMSE 1.79 pp on 270 points. The pre-registered hypothesis passes under both.</p>
+<p>Bias by band: +0.15 pp (0–20% illumination, 737 points), −0.08 pp (20–50%, 1,042 points). Only 3 points fall in 50–80% and none above, so the random sample says little about the sunniest ground. Agreement is not carried by one end of the range it does cover.</p>
+<p>The app ships the converged profile for its named sites (bilinear 40 m steps, 150 km reach). A point you type in is traced on the coarser 594 m elevation grid at half-cell steps out to 150 km. The older 160 m nearest-neighbour profile, still labelled <code>shipped</code> in the result files, scores r = 0.991 and RMSE 1.79 pp on 270 points of a 300-point, 3-hourly run; it is kept only for comparison and is no longer the profile the app uses.</p>
+<p><strong>Landing sites.</strong> At 105 published Artemis III landing locations the same comparison gives r = 0.915, RMSE 6.8 pp, bias −1.1 pp, with 80 of 105 within 5 pp (<code>web/public/terrain/validation.json</code>). These are the sunniest crests, exactly where the random sample is thin, and where sunlight changes over tens of metres.</p>
+<p><strong>Deviation from the pre-registration.</strong> The converged convention uses a 150 km horizon reach, decided after H1 was first run; the pre-registered reach was 64 km, which the older <code>shipped</code> convention keeps.</p>
+<h3>4.1b Shadow timing against timestamped photographs (exploratory)</h3>
+<p>This comparison was <strong>not pre-registered</strong>; its choices were fixed in the script header before any comparison with our model was run, and it is reported in full, including what does not agree.</p>
+<p>Reference: LROC <code>WAC_POLE_MOVIE_SOUTH</code>, one map-projected photograph of the pole per orbit. All 261 frames of December 2009 were sampled on a fixed 1 km grid within 24 km of the pole (1,793 points; 467,973 samples). A sample is &quot;bright&quot; above the Otsu threshold of the photographs alone (I/F 0.0073). Our prediction is lit when at least half the solar disc clears the converged LOLA skyline. Registration was confirmed without our model (photo bright share vs. NASA&#x27;s LOLA sunlight map: r = 0.872 in the stated orientation, at most 0.04 in the others).</p>
+<table><thead><tr><th>Test</th><th>Result</th><th>Baseline / caveat</th></tr></thead><tbody>
+<tr><td>Bright/dark state, per sample</td><td>96.6% agree</td><td>&quot;always dark&quot; scores 81.2%; bright-class IoU 0.842</td></tr>
+<tr><td>Photographed transitions with a match of ours within 24 h</td><td>1,519 of 1,802</td><td>283 (16%) unmatched</td></tr>
+<tr><td>Timing error of matched transitions</td><td>median 0.5 h; 70% within 2 h</td><td>frames are 1.9 h apart; 90th percentile 11.7 h</td></tr>
+<tr><td>7-day mission survival, photographed light vs. ours</td><td>95.9% agree (50,204 missions)</td><td>&quot;always fails&quot; scores 82%</td></tr>
+<tr><td>When we say &quot;survives&quot;, photographs agree</td><td>82.7%</td><td>1,839 of 10,640 predicted survivals fail on the photographed light</td></tr>
+</tbody></table>
+<p>With the app&#x27;s &quot;any part of the disc&quot; rule, state agreement is 95.4% and the median timing error 3.3 h (our sunrise early, our sunset late): a photo pixel reads bright only with substantial direct light. Threshold sensitivity: 97.5% at half the threshold, 92.8% at double.</p>
+<p>Both photograph tests use a binary light/dark rule (half the disc, then any part of it), so they check the lighting decision and not the fractional-disc power calculation the app uses for generation. They also cover December 2009 within 24 km of the pole and 7-day stays only, so they say nothing directly about the 14-day February stays in the showcase.</p>
+<p>Limits: one month in southern summer; a 100 m pixel on a slope facing away from a grazing Sun reads dark while the Sun is above the skyline; 14-day stays could not be tested because the month has no 14-day run of frames without a gap over 6 hours; survival here tests the shadow timing fed to the power model, not the power model. Data: <code>research/validation/result-wac-movie.json</code>.</p>
 <h3>4.2 The defect the test found</h3>
 <p>An earlier build looked up the horizon at the azimuth <strong>180° from the Sun</strong>. The error is invisible at the pole (where terrain is near-isotropic) and survives spot checks on summits, but fails decisively in a crater:</p>
 <table><thead><tr><th>Location</th><th>Before</th><th>After</th><th>Reference</th></tr></thead><tbody>
@@ -82,20 +100,28 @@ ul { margin: 0 0 6pt 16pt; }
 <tr><td>Horizon azimuth sampled every 4° instead of 1°</td><td>≤ 0.24%</td></tr>
 <tr><td>Ray interval 80 → 320 m</td><td>60.6% → 81.8%</td></tr>
 </tbody></table>
-<p>Ray-sampling interval is the largest remaining sensitivity. Coarse intervals step over ridges and inflate sunlight; the shipped 160 m interval is the one that scores r = 0.991 against NASA, which is its empirical justification.</p>
+<p>Ray-sampling interval is the largest remaining sensitivity. Coarse intervals step over ridges and inflate sunlight. The converged 40 m bilinear profile the app uses is the one that scores r = 0.990 (1.88 pp RMSE) against NASA over 1,782 points, which is its empirical justification.</p>
 <h2>7. Limitations</h2>
 <ul>
-<li>The LROC image-based product (<code>WAC_POLE_ILL_TWI_SOUTH</code>) was not compared. It is a stronger</li>
+<li>Accuracy at a specific landing point is several times worse than map-wide (6.8 pp against</li>
 </ul>
-<p>  truth set than altimetry because it records real shadows.</p>
+<p>  1.88 pp RMSE), so a survival verdict at a named site is an early-planning estimate.</p>
 <ul>
-<li>Permanent-shadow IoU and Earth-visibility comparison are not computed as separate statistics.</li>
+<li>Mission survival is checked against photographs only for 7-day stays in one month (§4.1b);</li>
+</ul>
+<p>  14-day stays are untested.</p>
+<ul>
+<li>The 180° azimuth defect was found and fixed using the same NASA map that H1 is scored</li>
+</ul>
+<p>  against. The thresholds were fixed beforehand, but H1 is not independent of that fix; H3   (photographs) is.</p>
+<ul>
+<li>Re-running §4.1 needs NASA&#x27;s raw LOLA elevation model, which is not stored in the repository.</li>
 <li>One hemisphere-season (180 days) in the product; the reference spans 18.6 years.</li>
 <li>No thermal, dust or power-system modelling. Array output is first-order.</li>
 <li>Physical libration enters only through the IAU series.</li>
 </ul>
 <h2>8. Conclusions</h2>
-<p>1. A browser-resident model, using public terrain and ephemerides, reproduces NASA&#x27;s 18.6-year    polar visibility map to r = 0.995 and 1.4 percentage points RMSE. 2. External validation found a 180° azimuth defect that internal checks and spot checks had    missed. Reference products are worth more than self-consistency. 3. Illumination at a single point remains sensitive to ray interval and site choice; the    number is only meaningful with its convention stated, and the map-wide test is the honest    way to choose that convention.</p>
+<p>1. A browser-resident model, using public terrain and ephemerides, reproduces NASA&#x27;s 18.6-year    polar visibility map to r = 0.990 and 1.9 percentage points RMSE map-wide, and to 6.8    points at published landing sites. 2. External validation found a 180° azimuth defect that internal checks and spot checks had    missed. Reference products are worth more than self-consistency. 3. Illumination at a single point remains sensitive to ray interval and site choice; the    number is only meaningful with its convention stated, and the map-wide test is the honest    way to choose that convention.</p>
 <h2>References</h2>
 <p>See <code>research/LITERATURE.md</code> for the annotated source list with quoted methodology.</p>
 <h2>Reproduction</h2>

@@ -99,8 +99,9 @@ prime meridian was 2.24° off and drifting 0.6°/yr, while its latitude matched 
 | Ray interval 80 → 320 m (nearest-neighbour) | 60.6% → 81.8% |
 
 The first three are negligible. The fourth is real and is *sampling* sensitivity, not a bug:
-coarser ray intervals step over ridges and inflate sunlight. The shipped choice (160 m, 2 px)
-is the one that scores r = 0.991 against NASA, which is the empirical justification for it.
+coarser ray intervals step over ridges and inflate sunlight. The named sites use the converged
+profile (bilinear, 40 m, 150 km), which scores r = 0.990 against NASA. The older 160 m
+nearest-neighbour profile (r = 0.991 on a 300-point, 3-hourly run) is kept only for comparison.
 
 ### Convergence with bilinear sampling
 

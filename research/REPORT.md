@@ -87,8 +87,11 @@ Bias by band: +0.15 pp (0–20% illumination, 737 points), −0.08 pp (20–50%,
 Only 3 points fall in 50–80% and none above, so the random sample says little about the
 sunniest ground. Agreement is not carried by one end of the range it does cover.
 
-The shipped convention — nearest-neighbour sampling at a 160 m interval — scores r = 0.991,
-RMSE 1.79 pp on 270 points. The pre-registered hypothesis passes under both.
+The app ships the converged profile for its named sites (bilinear 40 m steps, 150 km reach). A
+point you type in is traced on the coarser 594 m elevation grid at half-cell steps out to
+150 km. The older 160 m nearest-neighbour profile, still labelled `shipped` in the result
+files, scores r = 0.991 and RMSE 1.79 pp on 270 points of a 300-point, 3-hourly run; it is
+kept only for comparison and is no longer the profile the app uses.
 
 **Landing sites.** At 105 published Artemis III landing locations the same comparison gives
 r = 0.915, RMSE 6.8 pp, bias −1.1 pp, with 80 of 105 within 5 pp
@@ -96,7 +99,7 @@ r = 0.915, RMSE 6.8 pp, bias −1.1 pp, with 80 of 105 within 5 pp
 random sample is thin, and where sunlight changes over tens of metres.
 
 **Deviation from the pre-registration.** The converged convention uses a 150 km horizon reach,
-decided after H1 was first run; the pre-registered reach was 64 km, which the shipped
+decided after H1 was first run; the pre-registered reach was 64 km, which the older `shipped`
 convention keeps.
 
 ### 4.1b Shadow timing against timestamped photographs (exploratory)
@@ -122,6 +125,11 @@ vs. NASA's LOLA sunlight map: r = 0.872 in the stated orientation, at most 0.04 
 With the app's "any part of the disc" rule, state agreement is 95.4% and the median timing error
 3.3 h (our sunrise early, our sunset late): a photo pixel reads bright only with substantial
 direct light. Threshold sensitivity: 97.5% at half the threshold, 92.8% at double.
+
+Both photograph tests use a binary light/dark rule (half the disc, then any part of it), so they
+check the lighting decision and not the fractional-disc power calculation the app uses for
+generation. They also cover December 2009 within 24 km of the pole and 7-day stays only, so
+they say nothing directly about the 14-day February stays in the showcase.
 
 Limits: one month in southern summer; a 100 m pixel on a slope facing away from a grazing Sun
 reads dark while the Sun is above the skyline; 14-day stays could not be tested because the
@@ -186,8 +194,8 @@ meridian was 2.24° off and drifting 0.6°/yr while its latitude matched to 0.00
 | Ray interval 80 → 320 m | 60.6% → 81.8% |
 
 Ray-sampling interval is the largest remaining sensitivity. Coarse intervals step over ridges
-and inflate sunlight; the shipped 160 m interval is the one that scores r = 0.991 against
-NASA, which is its empirical justification.
+and inflate sunlight. The converged 40 m bilinear profile the app uses is the one that scores
+r = 0.990 (1.88 pp RMSE) against NASA over 1,782 points, which is its empirical justification.
 
 ## 7. Limitations
 
