@@ -1854,7 +1854,7 @@ export default function App() {
             <h3 className="method-h">Check it yourself</h3>
             <p>
               All code and data steps are open at{" "}
-              <a href="https://github.com/shahaman098/sunlock" target="_blank" rel="noreferrer">github.com/shahaman098/sunlock</a>.
+              <a href="https://github.com/shahaman098/sunlock-app" target="_blank" rel="noreferrer">github.com/shahaman098/sunlock-app</a>.
               In <code>web/</code>: <code>npm test</code> runs the automated checks (geometry, battery model and every
               published number against its threshold); <code>npm run validate</code> repeats the comparison with NASA's maps;{" "}
               <code>npm run verify</code> repeats the JPL Horizons check; <code>npm run sites</code> rebuilds the site

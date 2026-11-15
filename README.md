@@ -6,8 +6,8 @@ A landing-window navigator for the lunar south pole, built for the
 [NASA Space Apps Challenge 2026](https://www.spaceappschallenge.org/2026/challenges/lunar-landing-site-navigator/)
 challenge *Lunar Landing Site Navigator*.
 
-**Live:** https://shahaman098.github.io/sunlock/
-**Demo (7 slides):** https://shahaman098.github.io/sunlock/demo/sunlock-demo.pdf
+**Live:** https://shahaman098.github.io/sunlock-app/
+**Demo (7 slides):** https://shahaman098.github.io/sunlock-app/demo/sunlock-demo.pdf
 
 ![SUNLOCK interface](web/public/demo/map.jpg)
 
