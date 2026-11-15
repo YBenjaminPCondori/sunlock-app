@@ -16,22 +16,38 @@ npm run bench:conv # convergence + disc-criterion study
 
 ## 1. Pre-registered validation against NASA products
 
-Four hypotheses were fixed and committed (`research/PREREGISTRATION.md`, commit `83b4287`)
-**before** any comparison ran. All four pass.
+Four hypotheses were fixed and committed (`research/PREREGISTRATION.md`) **before** any
+comparison ran. All four pass. The pre-registration commit is `83b4287` (15 Nov 2026, 00:55 GMT)
+in the project's original repository, `github.com/shahaman098/sunlock`; this repository's
+history starts later, so the ordering can only be checked there.
+
+The numbers below are the ones in the committed result files
+(`research/validation/result-converged.json`, `result-wac.json`) and in the app
+(`web/public/terrain/validation.json`).
 
 | # | Reference | Metric | Result | Threshold | |
 |---|---|---|---|---|---|
-| **H1** | LOLA `AVGVISIB_85S_060M` (18.6 yr, 60 m) | Pearson r | **0.9948** | ≥ 0.90 | ✅ |
-| | | RMSE | **1.35 pp** | — | |
-| | | bias | **−0.16 pp** | ≤ 5 pp | ✅ |
-| **H2** | LOLA `LPSR_85S_060M` permanent shadow | IoU | **0.907** | ≥ 0.80 | ✅ |
+| **H1** | LOLA `AVGVISIB_85S_060M` (18.6 yr, 60 m) | Pearson r | **0.9897** | ≥ 0.90 | ✅ |
+| | | RMSE | **1.88 pp** | — | |
+| | | bias | **+0.01 pp** | ≤ 5 pp | ✅ |
+| **H2** | LOLA `LPSR_85S_060M` permanent shadow | IoU | **0.926** | ≥ 0.80 | ✅ |
 | **H3** | LROC `WAC_POLE_ILL_TWI_SOUTH` (image-based) | Pearson r | **0.980** | ≥ 0.85 | ✅ |
 | | | RMSE / bias | 3.09 pp / +1.59 pp | — | |
-| **H4** | LOLA Earth-visibility map | Pearson r | **0.9893** | ≥ 0.90 | ✅ |
-| | | RMSE / bias | 3.01 pp / −0.08 pp | — | |
+| **H4** | LOLA Earth-visibility map | Pearson r | **0.9894** | ≥ 0.90 | ✅ |
+| | | RMSE / bias | 2.98 pp / +0.19 pp | — | |
 
-Sample: fixed seed, 85–90°S (88–90°S for H3), 500 points, 3-hourly over 18.6 years
-(pre-registered fallback). H2 confusion matrix: TP 49, FP 0, FN 5, TN 446.
+Sample: fixed seed, 85–90°S, 2,000 points drawn, hourly over 18.6 years (the pre-registered
+primary run). H1 uses the 1,782 points with valid reference data, H4 1,471, H3 the 296 inside
+the LROC map's 88–90°S coverage. H2 confusion matrix over all 2,000: TP 212, FP 6, FN 11,
+TN 1,771.
+
+An earlier 500-point, 3-hourly rerun gave r = 0.9948; it was replaced by the pre-registered
+2,000-point hourly run above and is not the reported result.
+
+**At landing sites the error is larger than map-wide.** At 105 published Artemis III landing
+locations: r = 0.915, RMSE **6.8 pp**, bias −1.1 pp, 80 of 105 within 5 pp. Landing sites sit
+on crests and rims, where sunlight changes over tens of metres, so a survival verdict at a
+named site carries more uncertainty than the map-wide figure suggests.
 
 H3 is the strongest external test: the LROC map is derived from **3,807 photographs** taken
 over one lunar year, so it checks our predicted shadows against *observed* shadows (296
@@ -102,12 +118,12 @@ mixed a rotated horizon into the comparison.
 
 ## 4. What is *not* validated
 
-- **LROC WAC image-based comparison** (planned as H3) is not done. The image-derived
-  product is a stronger truth set than altimetry, because it records real shadows.
-- **Permanent-shadow IoU** (H2) is not computed as a separate statistic; the map
-  comparison already includes shadowed points, but an explicit confusion matrix is missing.
-- **Earth-visibility map comparison** (H4) is not run, although the same machinery applies.
+- **Mission survival over a full 14-day stay.** The photograph-based timing check
+  (`research/validation/result-wac-movie.json`) covers 7-day stays in one month; when the model
+  says "survives", the photographed light agrees 82.7% of the time.
+- **Accuracy at a specific landing point.** See the landing-site figures in §1: 6.8 pp RMSE at
+  published sites, against 1.88 pp map-wide.
+- **Re-running §1 needs NASA's raw LOLA elevation model**, which is not stored in this
+  repository; the result files are committed, the input is pinned in `data/sources.json`.
 - No thermal, dust or power-system model. Array output is first-order.
 - Physical libration enters only through the IAU series; no SPICE cross-check.
-
-Each is a named next step with a dataset attached, not a hand-wave.
